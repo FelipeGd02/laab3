@@ -21,13 +21,12 @@ class BuddyList extends HTMLElement {
     this.render();
     this.renderCards();
 
-    // Escuchar filtro después del render inicial
     this.shadowRoot!.querySelector("buddy-filter")!.addEventListener("buddy-filter-changed", (e: any) => {
       const text = e.detail.filter;
       this.filtered = this.buddies.filter(b =>
         b.displayName.toLowerCase().includes(text)
       );
-      this.renderCards(); // Solo actualizar la lista
+      this.renderCards();
     });
   }
 
@@ -36,7 +35,10 @@ class BuddyList extends HTMLElement {
       <style>
         :host {
           display: block;
+          padding: 2rem;
+          background-color: #0F1923;
         }
+
         .grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

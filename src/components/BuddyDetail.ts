@@ -1,72 +1,103 @@
-import { BuddyDetail } from "../types/Buddy";
-
-class BuddyDetailComponent extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-  }
-
-  async connectedCallback() {
-    const uuid = this.getAttribute("uuid");
-
-    if (!uuid) {
-      this.renderError("No se proporcionó un UUID.");
-      return;
-    }
-
-    try {
-      const res = await fetch(`https://valorant-api.com/v1/buddies/${uuid}`);
-      const data = await res.json();
-
-      if (!data.status || !data.data) {
-        this.renderError("No se encontró el buddy.");
+class BuddyDetail extends HTMLElement {
+    private shadowInitialized: boolean = false;
+  
+    async connectedCallback() {
+      if (!this.shadowInitialized) {
+        this.attachShadow({ mode: "open" });
+        this.shadowInitialized = true;
+      }
+  
+      const uuid = this.getAttribute("uuid");
+  
+      if (!uuid) {
+        this.renderError("No se proporcionó UUID.");
         return;
       }
-
-      const buddy: BuddyDetail = data.data;
-      this.render(buddy);
-
-    } catch (error) {
-      this.renderError("Ocurrió un error al cargar los datos.");
-      console.error("Error cargando el buddy:", error);
+  
+      try {
+        const res = await fetch(`https://valorant-api.com/v1/buddies/${uuid}`);
+        const json = await res.json();
+  
+        const buddy = json.data;
+        if (!buddy) {
+          this.renderError("No se encontró el buddy.");
+          return;
+        }
+  
+        this.renderBuddy(buddy);
+      } catch (err) {
+        console.error(err);
+        this.renderError("Error al cargar el buddy.");
+      }
+    }
+  
+    renderBuddy(buddy: any) {
+      if (!this.shadowRoot) return;
+  
+      this.shadowRoot.innerHTML = `
+        <style>
+          .detail {
+            padding: 2rem;
+            text-align: center;
+            background-color: #0F1923;
+            color: #ECE8E1;
+          }
+  
+          img {
+            max-width: 200px;
+            border: 3px solid #FF4655;
+            padding: 1rem;
+          }
+  
+          h2 {
+            color: #FF4655;
+          }
+  
+          button {
+            background-color: #FF4655;
+            border: none;
+            padding: 0.5rem 1rem;
+            color: #fff;
+            font-weight: bold;
+            font-family: 'Rajdhani', sans-serif;
+            cursor: pointer;
+            margin-top: 2rem;
+          }
+  
+          button:hover {
+            background-color: #ff2e43;
+          }
+        </style>
+        <div class="detail">
+          <h2>${buddy.displayName}</h2>
+          <img src="${buddy.displayIcon}" alt="${buddy.displayName}" />
+          <p>UUID: ${buddy.uuid}</p>
+          <p>Asset Path: ${buddy.assetPath}</p>
+          <button id="back">Volver</button>
+        </div>
+      `;
+  
+      this.shadowRoot.querySelector("#back")!.addEventListener("click", () => {
+        location.reload();
+      });
+    }
+  
+    renderError(message: string) {
+      if (!this.shadowRoot) return;
+  
+      this.shadowRoot.innerHTML = `
+        <style>
+          .error {
+            padding: 2rem;
+            text-align: center;
+            color: #FF4655;
+            font-weight: bold;
+          }
+        </style>
+        <div class="error">${message}</div>
+      `;
     }
   }
-
-  render(buddy: BuddyDetail) {
-    this.shadowRoot!.innerHTML = `
-      <style>
-        .detail { text-align: center; padding: 2rem; }
-        img { max-width: 200px; }
-      </style>
-      <div class="detail">
-        <h2>${buddy.displayName}</h2>
-        <img src="${buddy.displayIcon}" alt="${buddy.displayName}" />
-        <p>UUID: ${buddy.uuid}</p>
-        <p>Asset Path: ${buddy.assetPath}</p>
-        <button id="back">Volver</button>
-      </div>
-    `;
-
-    this.shadowRoot!.querySelector("#back")?.addEventListener("click", () => {
-      window.location.reload();
-    });
-  }
-
-  renderError(message: string) {
-    this.shadowRoot!.innerHTML = `
-      <style>
-        .error { color: red; text-align: center; padding: 2rem; }
-      </style>
-      <div class="error">
-        <p>${message}</p>
-        <button id="back">Volver</button>
-      </div>
-    `;
-
-    this.shadowRoot!.querySelector("#back")?.addEventListener("click", () => {
-      window.location.reload();
-    });
-  }
-}
-
-customElements.define("buddy-detail", BuddyDetailComponent);
+  
+  customElements.define("buddy-detail", BuddyDetail);
+  

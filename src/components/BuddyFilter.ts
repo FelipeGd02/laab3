@@ -12,12 +12,18 @@ class BuddyFilter extends HTMLElement {
       this.shadowRoot!.innerHTML = `
         <style>
           input {
-            width: 100%;
-            padding: 0.5rem;
+            background-color: #1F2A36;
+            border: 2px solid #FF4655;
+            color: #ECE8E1;
+            font-family: 'Rajdhani', sans-serif;
             font-size: 1rem;
+            padding: 0.5rem;
+            width: 100%;
             margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
+          }
+  
+          input::placeholder {
+            color: #ccc;
           }
         </style>
         <input type="text" placeholder="Buscar buddy..." />
